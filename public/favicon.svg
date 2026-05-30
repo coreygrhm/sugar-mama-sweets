@@ -1,10 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Sugar Mama Sweets">
   <rect width="64" height="64" rx="14" fill="#fbf6f0"/>
-  <circle cx="32" cy="32" r="22" fill="#e8c4c4"/>
-  <circle cx="32" cy="32" r="22" fill="none" stroke="#c9a87c" stroke-width="2.5" stroke-dasharray="2 4"/>
-  <circle cx="24" cy="26" r="2.6" fill="#6b4f3a"/>
-  <circle cx="40" cy="28" r="2.6" fill="#6b4f3a"/>
-  <circle cx="30" cy="40" r="2.6" fill="#6b4f3a"/>
-  <circle cx="39" cy="39" r="2.2" fill="#6b4f3a"/>
-  <circle cx="22" cy="36" r="2.2" fill="#6b4f3a"/>
+  <!-- baked cookie edge -->
+  <circle cx="32" cy="32" r="25" fill="#dcb98e"/>
+  <!-- royal-icing flood -->
+  <circle cx="32" cy="32" r="22" fill="#d9a7a7"/>
+  <!-- piped icing outline -->
+  <circle cx="32" cy="32" r="22" fill="none" stroke="#fffaf4" stroke-width="2"/>
+  <!-- piped pearl border -->
+  <g fill="#fffaf4">
+    <circle cx="32" cy="15.5" r="1.7"/>
+    <circle cx="40.25" cy="17.71" r="1.7"/>
+    <circle cx="46.29" cy="23.75" r="1.7"/>
+    <circle cx="48.5" cy="32" r="1.7"/>
+    <circle cx="46.29" cy="40.25" r="1.7"/>
+    <circle cx="40.25" cy="46.29" r="1.7"/>
+    <circle cx="32" cy="48.5" r="1.7"/>
+    <circle cx="23.75" cy="46.29" r="1.7"/>
+    <circle cx="17.71" cy="40.25" r="1.7"/>
+    <circle cx="15.5" cy="32" r="1.7"/>
+    <circle cx="17.71" cy="23.75" r="1.7"/>
+    <circle cx="23.75" cy="17.71" r="1.7"/>
+  </g>
+  <!-- monogram -->
+  <text x="32" y="33" font-family="Georgia, 'Times New Roman', serif" font-size="26" font-style="italic" font-weight="700" fill="#b07d7d" text-anchor="middle" dominant-baseline="central">S</text>
 </svg>
