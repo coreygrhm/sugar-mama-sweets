@@ -1,0 +1,272 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EmailSignup from '../components/EmailSignup.astro';
+import { site } from '../config/site';
+import { resolveImage } from '../lib/images';
+
+const { home } = site;
+const heroImg = resolveImage(home.heroImage.src);
+const portraitImg = resolveImage(home.bio.portraitImage.src);
+const teasers = home.teaserImages.map((t) => ({ ...t, img: resolveImage(t.src) }));
+---
+
+<BaseLayout>
+  <!-- HERO ------------------------------------------------------------ -->
+  <section class="hero section">
+    <div class="container hero__grid">
+      <div class="hero__text reveal">
+        <p class="eyebrow">{site.location}</p>
+        <h1>{site.name}</h1>
+        <p class="lede hero__tagline">{site.tagline}</p>
+        <div class="hero__cta">
+          <a href="/contact" class="btn btn--primary">{home.heroCtaLabel}</a>
+          <a href="/gallery" class="btn btn--ghost">View the gallery</a>
+        </div>
+      </div>
+      <div class="hero__media reveal">
+        <Image
+          src={heroImg}
+          alt={home.heroImage.alt}
+          widths={[400, 640, 900]}
+          sizes="(min-width: 900px) 460px, 90vw"
+          loading="eager"
+          fetchpriority="high"
+          class="hero__img"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- BIO ------------------------------------------------------------- -->
+  <section class="section section--tint">
+    <div class="container bio__grid">
+      <div class="bio__media reveal">
+        <Image
+          src={portraitImg}
+          alt={home.bio.portraitImage.alt}
+          widths={[360, 560, 760]}
+          sizes="(min-width: 800px) 420px, 80vw"
+          loading="lazy"
+          class="bio__img"
+        />
+      </div>
+      <div class="bio__text reveal">
+        <h2>{home.bio.heading}</h2>
+        {home.bio.paragraphs.map((para) => <p>{para}</p>)}
+        <a href="/contact" class="btn btn--ghost">Get in touch</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- KNOWN FOR ------------------------------------------------------- -->
+  <section class="section">
+    <div class="container known reveal">
+      <p class="eyebrow">{home.knownForHeading}</p>
+      <ul class="known__list">
+        {
+          site.knownFor.map((item, i) => (
+            <>
+              {i > 0 && <li class="known__sep" aria-hidden="true">&bull;</li>}
+              <li class="known__item">{item}</li>
+            </>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- TEASER STRIP ---------------------------------------------------- -->
+  <section class="section">
+    <div class="container">
+      <div class="teaser__head reveal">
+        <h2>{home.teaserHeading}</h2>
+        <a href="/gallery" class="teaser__link">{home.teaserCtaLabel} &rarr;</a>
+      </div>
+      <ul class="teaser__grid">
+        {
+          teasers.map((t) => (
+            <li class="teaser__item reveal">
+              <a href="/gallery" aria-label="View the full gallery">
+                <Image
+                  src={t.img}
+                  alt={t.alt}
+                  widths={[280, 420, 560]}
+                  sizes="(min-width: 900px) 260px, 45vw"
+                  loading="lazy"
+                />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- EMAIL CAPTURE --------------------------------------------------- -->
+  <section class="section section--tint">
+    <div class="container">
+      <div class="reveal">
+        <EmailSignup variant="block" />
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA TO CONTACT -------------------------------------------------- -->
+  <section class="section">
+    <div class="container final-cta reveal">
+      <h2>Ready to order something sweet?</h2>
+      <p class="lede">Tell me about your celebration and let’s design the perfect set together.</p>
+      <a href="/contact" class="btn btn--primary">{home.heroCtaLabel}</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* HERO — built for a tall portrait (~4:5) photo */
+  .hero {
+    padding-top: clamp(2rem, 5vw, 3.5rem);
+  }
+  .hero__grid {
+    display: grid;
+    gap: clamp(2rem, 6vw, 4rem);
+    grid-template-columns: 1fr;
+    align-items: center;
+  }
+  .hero__tagline {
+    margin-block: 1rem 1.75rem;
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .hero__media {
+    justify-self: center;
+    width: 100%;
+    max-width: 460px;
+  }
+  .hero__img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+  }
+  @media (min-width: 900px) {
+    .hero__grid {
+      grid-template-columns: 1.05fr 0.95fr;
+    }
+    .hero__media {
+      justify-self: end;
+    }
+  }
+
+  /* BIO */
+  .bio__grid {
+    display: grid;
+    gap: clamp(2rem, 6vw, 4rem);
+    grid-template-columns: 1fr;
+    align-items: center;
+  }
+  .bio__media {
+    width: 100%;
+    max-width: 420px;
+    margin-inline: auto;
+  }
+  .bio__img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+  }
+  @media (min-width: 800px) {
+    .bio__grid {
+      grid-template-columns: 0.85fr 1.15fr;
+    }
+  }
+  .bio__text .btn {
+    margin-top: 0.75rem;
+  }
+
+  /* KNOWN FOR */
+  .known {
+    text-align: center;
+  }
+  .known .eyebrow {
+    margin-bottom: 1.1rem;
+  }
+  .known__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.6rem, 2.5vw, 1.75rem);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .known__item {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 1.1rem + 2vw, 2.4rem);
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .known__sep {
+    color: var(--blush);
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+  }
+
+  /* TEASER STRIP */
+  .teaser__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 1.75rem;
+  }
+  .teaser__head h2 {
+    margin: 0;
+  }
+  .teaser__link {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .teaser__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(0.75rem, 2vw, 1.25rem);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 760px) {
+    .teaser__grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .teaser__item img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.35s var(--ease);
+  }
+  .teaser__item a:hover img {
+    transform: scale(1.03);
+  }
+
+  /* FINAL CTA */
+  .final-cta {
+    text-align: center;
+    max-width: var(--max-w-text);
+    margin-inline: auto;
+  }
+  .final-cta .lede {
+    margin-inline: auto;
+    margin-bottom: 1.75rem;
+  }
+</style>

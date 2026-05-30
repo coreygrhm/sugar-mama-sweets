@@ -1,0 +1,189 @@
+---
+import { Image, getImage } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../config/site';
+import { resolveImage } from '../lib/images';
+
+const { gallery } = site;
+
+// Resolve each photo + pre-generate a larger optimized version for the lightbox.
+const photos = await Promise.all(
+  gallery.photos.map(async (p) => {
+    const img = resolveImage(p.src);
+    const full = await getImage({ src: img, widths: [1000], format: 'webp' });
+    return { ...p, img, fullSrc: full.src };
+  })
+);
+---
+
+<BaseLayout title="Gallery" description={gallery.intro}>
+  <section class="section">
+    <div class="container">
+      <header class="gallery__head reveal">
+        <h1>{gallery.heading}</h1>
+        <p class="lede">{gallery.intro}</p>
+      </header>
+
+      <div class="masonry" data-lightbox-root>
+        {
+          photos.map((p) => (
+            <figure class="masonry__item reveal">
+              <button
+                type="button"
+                class="masonry__btn"
+                data-full={p.fullSrc}
+                data-alt={p.alt}
+                aria-label={`Enlarge photo: ${p.alt}`}
+              >
+                <Image
+                  src={p.img}
+                  alt={p.alt}
+                  widths={[300, 450, 600]}
+                  sizes="(min-width: 1000px) 340px, (min-width: 600px) 45vw, 90vw"
+                  loading="lazy"
+                />
+              </button>
+            </figure>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox overlay (hidden until a photo is clicked) -->
+  <div class="lightbox" data-lightbox hidden>
+    <button type="button" class="lightbox__close" data-lightbox-close aria-label="Close">
+      &times;
+    </button>
+    <img class="lightbox__img" data-lightbox-img src="" alt="" />
+  </div>
+</BaseLayout>
+
+<style>
+  .gallery__head {
+    max-width: var(--max-w-text);
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+
+  /* CSS-columns masonry — naturally handles tall portrait tiles */
+  .masonry {
+    column-count: 2;
+    column-gap: clamp(0.75rem, 2vw, 1.25rem);
+  }
+  @media (min-width: 700px) {
+    .masonry {
+      column-count: 3;
+    }
+  }
+  @media (min-width: 1040px) {
+    .masonry {
+      column-count: 4;
+    }
+  }
+  .masonry__item {
+    margin: 0 0 clamp(0.75rem, 2vw, 1.25rem);
+    break-inside: avoid;
+  }
+  .masonry__btn {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+    width: 100%;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+  }
+  .masonry__btn img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.4s var(--ease);
+  }
+  .masonry__btn:hover img {
+    transform: scale(1.04);
+  }
+
+  /* Lightbox */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1rem, 4vw, 3rem);
+    background: rgba(61, 51, 43, 0.82);
+    backdrop-filter: blur(4px);
+  }
+  .lightbox[hidden] {
+    display: none;
+  }
+  .lightbox__img {
+    max-width: 100%;
+    max-height: 88vh;
+    width: auto;
+    height: auto;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+  }
+  .lightbox__close {
+    position: absolute;
+    top: clamp(0.75rem, 2vw, 1.5rem);
+    right: clamp(0.75rem, 2vw, 1.5rem);
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    border: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .lightbox__close:hover {
+    background: var(--blush-soft);
+  }
+</style>
+
+<script>
+  // Minimal vanilla lightbox — no library.
+  const root = document.querySelector<HTMLElement>('[data-lightbox-root]');
+  const box = document.querySelector<HTMLElement>('[data-lightbox]');
+  const boxImg = document.querySelector<HTMLImageElement>('[data-lightbox-img]');
+  const closeBtn = document.querySelector<HTMLButtonElement>('[data-lightbox-close]');
+  let lastFocus: HTMLElement | null = null;
+
+  const open = (full: string, alt: string, trigger: HTMLElement) => {
+    if (!box || !boxImg) return;
+    lastFocus = trigger;
+    boxImg.src = full;
+    boxImg.alt = alt;
+    box.hidden = false;
+    document.body.style.overflow = 'hidden';
+    closeBtn?.focus();
+  };
+
+  const close = () => {
+    if (!box || !boxImg) return;
+    box.hidden = true;
+    boxImg.src = '';
+    document.body.style.overflow = '';
+    lastFocus?.focus();
+  };
+
+  root?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-full]');
+    if (!btn) return;
+    open(btn.dataset.full ?? '', btn.dataset.alt ?? '', btn);
+  });
+
+  closeBtn?.addEventListener('click', close);
+  box?.addEventListener('click', (e) => {
+    if (e.target === box) close();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && box && !box.hidden) close();
+  });
+</script>

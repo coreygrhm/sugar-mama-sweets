@@ -1,0 +1,20 @@
+{
+  "name": "sugar-mama-sweets",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Marketing website for Sugar Mama Sweets — custom decorated sugar cookies.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.2.1",
+    "@fontsource/nunito-sans": "^5.1.0",
+    "@fontsource/playfair-display": "^5.1.0",
+    "astro": "^5.1.1",
+    "sharp": "^0.33.5"
+  }
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Sugar Mama Sweets">
+  <rect width="64" height="64" rx="14" fill="#fbf6f0"/>
+  <circle cx="32" cy="32" r="22" fill="#e8c4c4"/>
+  <circle cx="32" cy="32" r="22" fill="none" stroke="#c9a87c" stroke-width="2.5" stroke-dasharray="2 4"/>
+  <circle cx="24" cy="26" r="2.6" fill="#6b4f3a"/>
+  <circle cx="40" cy="28" r="2.6" fill="#6b4f3a"/>
+  <circle cx="30" cy="40" r="2.6" fill="#6b4f3a"/>
+  <circle cx="39" cy="39" r="2.2" fill="#6b4f3a"/>
+  <circle cx="22" cy="36" r="2.2" fill="#6b4f3a"/>
+</svg>

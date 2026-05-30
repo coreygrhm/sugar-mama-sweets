@@ -1,0 +1,385 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site, isPlaceholder } from '../config/site';
+
+const { contactPage, contact, ordering } = site;
+
+// Email is only a real, clickable method once it's filled in (not a [placeholder]).
+const emailReady = Boolean(contact.email) && !isPlaceholder(contact.email);
+
+const methods = [
+  contact.instagram && {
+    label: 'Instagram',
+    detail: contact.instagramHandle || contact.instagram,
+    href: contact.instagram,
+    external: true,
+  },
+  contact.facebook && {
+    label: 'Facebook',
+    detail: contact.facebookHandle || 'Message me on Facebook',
+    href: contact.facebook,
+    external: true,
+  },
+  emailReady && {
+    label: 'Email',
+    detail: contact.email,
+    href: `mailto:${contact.email}`,
+    external: false,
+  },
+  contact.phone && {
+    label: 'Text / Call',
+    detail: contact.phone,
+    href: `tel:${contact.phone.replace(/[^+\d]/g, '')}`,
+    external: false,
+  },
+].filter(Boolean) as { label: string; detail: string; href: string; external: boolean }[];
+
+// "Good to know" facts. Unfilled [placeholders] still render so the page looks
+// complete — clearly marked so it's obvious what's left to fill in.
+const orderFacts = [
+  { label: 'Lead time', value: ordering.leadTime },
+  { label: 'Pickup & delivery', value: ordering.fulfillment },
+];
+---
+
+<BaseLayout title="Contact & Orders" description={contactPage.intro}>
+  <section class="section">
+    <div class="container contact__head reveal">
+      <h1>{contactPage.heading}</h1>
+      <p class="lede">{contactPage.intro}</p>
+    </div>
+
+    <!-- HOW TO ORDER -->
+    <div class="container">
+      <ol class="steps">
+        {
+          contactPage.howToOrder.map((step, i) => (
+            <li class="step reveal">
+              <span class="step__num">{i + 1}</span>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="good-to-know reveal">
+        <h2>Good to know</h2>
+        <dl class="facts">
+          {
+            orderFacts.map((f) => (
+              <div class="fact">
+                <dt>{f.label}</dt>
+                <dd class:list={['fact__value', { 'fact__value--todo': isPlaceholder(f.value) }]}>
+                  {f.value}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT METHODS -->
+  <section class="section section--tint">
+    <div class="container">
+      <h2 class="reveal">Reach out</h2>
+      <ul class="methods">
+        {
+          methods.map((m) => (
+            <li class="method reveal">
+              <a
+                href={m.href}
+                class="method__link"
+                target={m.external ? '_blank' : undefined}
+                rel={m.external ? 'noopener' : undefined}
+              >
+                <span class="method__label">{m.label}</span>
+                <span class="method__detail">{m.detail}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      {
+        !emailReady && (
+          <p class="email-soon">
+            {/* TODO: add the order email in src/config/site.ts to turn this into a tappable Email button. */}
+            Email coming soon — for now, the fastest way to reach me is Instagram or Facebook.
+          </p>
+        )
+      }
+
+      {/* Optional contact form. POSTs to the SAME configurable endpoint pattern
+          as the email signup (PUBLIC_SIGNUP_ENDPOINT). No backend is built here
+          beyond a single fetch(). Remove this block if she prefers DM/email only. */}
+      <div class="contact-form-wrap reveal">
+        <h2>Or send a quick note</h2>
+        <form class="contact-form" data-contact-form novalidate>
+          <div class="field">
+            <label for="cf-name">Name</label>
+            <input id="cf-name" name="name" type="text" autocomplete="name" required />
+          </div>
+          <div class="field">
+            <label for="cf-email">Email</label>
+            <input id="cf-email" name="email" type="email" autocomplete="email" required />
+          </div>
+          <div class="field">
+            <label for="cf-message">Tell me about your order</label>
+            <textarea id="cf-message" name="message" rows="4" required></textarea>
+          </div>
+          <button type="submit" class="btn btn--primary" data-contact-button>Send message</button>
+          <p
+            class="contact-form__status"
+            data-contact-status
+            role="status"
+            aria-live="polite"
+          ></p>
+        </form>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact__head {
+    max-width: var(--max-w-text);
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+
+  /* steps */
+  .steps {
+    list-style: none;
+    margin: 0 0 2rem;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 800px) {
+    .steps {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .step {
+    display: flex;
+    gap: 1rem;
+    background: var(--white);
+    border: 1px solid color-mix(in srgb, var(--tan) 22%, transparent);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-soft);
+  }
+  .step h3 {
+    margin: 0 0 0.35rem;
+  }
+  .step p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+  .step__num {
+    flex: 0 0 auto;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 999px;
+    background: var(--blush-soft);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+  }
+  /* good to know */
+  .good-to-know {
+    max-width: var(--max-w-text);
+    background: var(--cream-deep);
+    border-left: 3px solid var(--blush);
+    padding: 1.25rem 1.5rem;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .good-to-know h2 {
+    font-size: 1.4rem;
+    margin: 0 0 0.75rem;
+  }
+  .facts {
+    margin: 0;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .fact dt {
+    font-weight: 800;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--tan);
+    margin-bottom: 0.15rem;
+  }
+  .fact dd {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+  .fact__value--todo {
+    font-style: italic;
+    opacity: 0.85;
+  }
+  .email-soon {
+    max-width: var(--max-w-text);
+    margin: -1.5rem 0 3rem;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* contact methods */
+  .methods {
+    list-style: none;
+    margin: 1.5rem 0 3rem;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 600px) {
+    .methods {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  .method__link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    background: var(--white);
+    border: 1.5px solid color-mix(in srgb, var(--tan) 30%, transparent);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.35rem;
+    color: var(--ink);
+    transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
+  }
+  .method__link:hover {
+    border-color: var(--blush);
+    transform: translateY(-2px);
+    color: var(--ink);
+  }
+  .method__label {
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--tan);
+  }
+  .method__detail {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  /* contact form */
+  .contact-form-wrap {
+    max-width: 560px;
+  }
+  .contact-form {
+    display: grid;
+    gap: 1rem;
+  }
+  .field {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .field label {
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .field input,
+  .field textarea {
+    font: inherit;
+    padding: 0.7em 0.85em;
+    border-radius: 10px;
+    border: 1.5px solid color-mix(in srgb, var(--tan) 40%, transparent);
+    background: var(--white);
+    color: var(--ink);
+    resize: vertical;
+  }
+  .field input:focus-visible,
+  .field textarea:focus-visible {
+    border-color: var(--blush);
+  }
+  .field input[aria-invalid='true'],
+  .field textarea[aria-invalid='true'] {
+    border-color: var(--error);
+  }
+  .contact-form .btn {
+    justify-self: start;
+  }
+  .contact-form__status {
+    margin: 0;
+    font-weight: 600;
+    min-height: 1.2em;
+  }
+  .contact-form__status[data-state='success'] {
+    color: var(--success);
+  }
+  .contact-form__status[data-state='error'] {
+    color: var(--error);
+  }
+</style>
+
+<script>
+  // Optional contact form. Reuses PUBLIC_SIGNUP_ENDPOINT — the same single
+  // configurable endpoint as the email signup. No dedicated backend here.
+  const endpoint = import.meta.env.PUBLIC_SIGNUP_ENDPOINT ?? '';
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  const button = document.querySelector<HTMLButtonElement>('[data-contact-button]');
+  const status = document.querySelector<HTMLElement>('[data-contact-status]');
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const setStatus = (state: '' | 'success' | 'error', message = '') => {
+    if (!status) return;
+    status.dataset.state = state;
+    status.textContent = message;
+  };
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    const name = String(data.get('name') ?? '').trim();
+    const email = String(data.get('email') ?? '').trim();
+    const message = String(data.get('message') ?? '').trim();
+
+    if (!name || !message || !EMAIL_RE.test(email)) {
+      setStatus('error', 'Please fill in your name, a valid email, and a message.');
+      return;
+    }
+
+    if (!endpoint) {
+      setStatus('error', 'Form endpoint not configured. Set PUBLIC_SIGNUP_ENDPOINT in .env.');
+      return;
+    }
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Sending…';
+    }
+    setStatus('');
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // `type` lets the Worker route order enquiries vs. list signups.
+        body: JSON.stringify({ type: 'contact', name, email, message }),
+      });
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+      form.reset();
+      setStatus('success', 'Thanks! I’ll get back to you soon. 🍪');
+    } catch (err) {
+      console.error('[contact] submission failed:', err);
+      setStatus('error', 'Something went wrong. Please email or DM me instead.');
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Send message';
+      }
+    }
+  });
+</script>

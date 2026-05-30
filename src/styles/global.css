@@ -1,0 +1,208 @@
+/* ==========================================================================
+   Sugar Mama Sweets — global styles
+   Palette derived from her work: soft blush, warm cream, warm tan.
+   Mobile-first. The photography carries the page; the UI stays quiet.
+   ========================================================================== */
+
+:root {
+  /* --- color --- */
+  --cream: #fbf6f0;        /* page background base */
+  --cream-deep: #f3e9dd;   /* alternating section tint */
+  --blush: #d9a7a7;        /* primary accent */
+  --blush-soft: #e8c4c4;   /* lighter accent / hovers */
+  --blush-deep: #c08a8a;   /* accent for text/links on cream */
+  --tan: #c9a87c;          /* warm tertiary tone */
+  --ink: #3d332b;          /* warm near-black text */
+  --ink-soft: #6b5e52;     /* muted body text */
+  --white: #ffffff;
+  --error: #b3261e;
+  --success: #4f7a4f;
+
+  /* --- type --- */
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* --- spacing / layout --- */
+  --max-w: 1120px;
+  --max-w-text: 640px;
+  --gap: clamp(1rem, 3vw, 2rem);
+  --section-y: clamp(3rem, 8vw, 6rem);
+  --radius: 14px;
+  --shadow-soft: 0 10px 30px -12px rgba(61, 51, 43, 0.25);
+
+  /* --- motion --- */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 0.96rem + 0.2vw, 1.075rem);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.12;
+  color: var(--ink);
+  margin: 0 0 0.5em;
+  letter-spacing: 0.005em;
+}
+
+h1 {
+  font-size: clamp(2.25rem, 1.6rem + 3.2vw, 3.75rem);
+}
+h2 {
+  font-size: clamp(1.75rem, 1.3rem + 2vw, 2.6rem);
+}
+h3 {
+  font-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.6rem);
+}
+
+p {
+  margin: 0 0 1rem;
+}
+
+a {
+  color: var(--blush-deep);
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+a:hover {
+  color: var(--ink);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* --- layout helpers --- */
+.container {
+  width: 100%;
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: clamp(1.1rem, 4vw, 2.5rem);
+}
+
+.section {
+  padding-block: var(--section-y);
+}
+.section--tint {
+  background: var(--cream-deep);
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--tan);
+  margin: 0 0 0.9rem;
+}
+
+.lede {
+  font-size: clamp(1.05rem, 1rem + 0.4vw, 1.25rem);
+  color: var(--ink-soft);
+  max-width: var(--max-w-text);
+}
+
+/* --- buttons --- */
+.btn {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.98rem;
+  letter-spacing: 0.02em;
+  padding: 0.85em 1.6em;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), background-color 0.2s var(--ease),
+    color 0.2s var(--ease), border-color 0.2s var(--ease);
+  text-align: center;
+}
+.btn--primary {
+  background: var(--blush);
+  color: var(--white);
+}
+.btn--primary:hover {
+  background: var(--blush-deep);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--blush);
+}
+.btn--ghost:hover {
+  background: var(--blush-soft);
+  color: var(--ink);
+  transform: translateY(-2px);
+}
+
+/* --- gentle reveal on scroll (progressive enhancement; no-JS = visible) --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* accessibility: respect reduced-motion + keep content visible without JS */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 3px solid var(--tan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

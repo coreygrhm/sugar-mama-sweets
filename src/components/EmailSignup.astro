@@ -1,0 +1,219 @@
+---
+/**
+ * Reusable email capture.
+ * Used on the home page (full block) and in the footer (compact variant).
+ *
+ * Submits the email as JSON via fetch() to PUBLIC_SIGNUP_ENDPOINT.
+ * No full-page form submit, no reload. Inline success/error states.
+ *
+ * Variants:
+ *   "block"   — large standalone section (home page)
+ *   "compact" — small inline field (footer)
+ */
+import { site } from '../config/site';
+
+interface Props {
+  variant?: 'block' | 'compact';
+}
+const { variant = 'block' } = Astro.props;
+
+// Read at build time. PUBLIC_ prefix exposes it to the browser.
+const endpoint = import.meta.env.PUBLIC_SIGNUP_ENDPOINT ?? '';
+---
+
+<section class:list={['signup', `signup--${variant}`]} data-signup>
+  {variant === 'block' && (
+    <div class="signup__copy">
+      <h2>{site.signup.heading}</h2>
+      <p class="lede">{site.signup.body}</p>
+    </div>
+  )}
+
+  <form class="signup__form" data-signup-form data-endpoint={endpoint} novalidate>
+    <label class="sr-only" for={`email-${variant}`}>Email address</label>
+    <input
+      id={`email-${variant}`}
+      type="email"
+      name="email"
+      inputmode="email"
+      autocomplete="email"
+      placeholder={site.signup.placeholder}
+      required
+      data-signup-input
+    />
+    <button type="submit" class="btn btn--primary" data-signup-button>
+      {variant === 'compact' ? 'Subscribe' : site.signup.buttonLabel}
+    </button>
+  </form>
+
+  {variant === 'compact' && <p class="signup__tagline">{site.signup.body}</p>}
+
+  <p
+    class="signup__status"
+    data-signup-status
+    role="status"
+    aria-live="polite"
+    data-success={site.signup.successMessage}
+    data-error={site.signup.errorMessage}
+  ></p>
+</section>
+
+<style>
+  .signup--block {
+    background: var(--white);
+    border: 1px solid color-mix(in srgb, var(--tan) 25%, transparent);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    padding: clamp(1.75rem, 5vw, 3rem);
+    text-align: center;
+    max-width: 720px;
+    margin-inline: auto;
+  }
+  .signup--block .signup__copy {
+    margin-bottom: 1.5rem;
+  }
+  .signup--block .lede {
+    margin-inline: auto;
+  }
+
+  .signup__form {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .signup--block .signup__form {
+    justify-content: center;
+    max-width: 480px;
+    margin-inline: auto;
+  }
+
+  .signup__form input {
+    flex: 1 1 220px;
+    min-width: 0;
+    font: inherit;
+    padding: 0.8em 1em;
+    border-radius: 999px;
+    border: 1.5px solid color-mix(in srgb, var(--tan) 45%, transparent);
+    background: var(--cream);
+    color: var(--ink);
+  }
+  .signup__form input:focus-visible {
+    border-color: var(--blush);
+    outline-offset: 1px;
+  }
+  .signup__form input[aria-invalid='true'] {
+    border-color: var(--error);
+  }
+  .signup__form .btn {
+    flex: 0 0 auto;
+  }
+
+  .signup__status {
+    margin: 0.9rem 0 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    min-height: 1.2em;
+  }
+  .signup__status[data-state='success'] {
+    color: var(--success);
+  }
+  .signup__status[data-state='error'] {
+    color: var(--error);
+  }
+
+  /* compact (footer) variant */
+  .signup--compact {
+    width: 100%;
+    max-width: 360px;
+  }
+  .signup--compact .signup__tagline {
+    margin: 0.6rem 0 0;
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+  }
+  .signup--compact .signup__form input {
+    background: var(--white);
+  }
+</style>
+
+<script>
+  // Wire up every signup form on the page (home block + footer compact).
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  document.querySelectorAll<HTMLFormElement>('[data-signup-form]').forEach((form) => {
+    const input = form.querySelector<HTMLInputElement>('[data-signup-input]');
+    const button = form.querySelector<HTMLButtonElement>('[data-signup-button]');
+    const status = form.parentElement?.querySelector<HTMLElement>('[data-signup-status]');
+    const endpoint = form.dataset.endpoint ?? '';
+
+    const setStatus = (state: '' | 'success' | 'error', message = '') => {
+      if (!status) return;
+      status.dataset.state = state;
+      status.textContent = message;
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!input) return;
+
+      const email = input.value.trim();
+
+      // Client-side validation.
+      if (!EMAIL_RE.test(email)) {
+        input.setAttribute('aria-invalid', 'true');
+        setStatus('error', 'Please enter a valid email address.');
+        input.focus();
+        return;
+      }
+      input.removeAttribute('aria-invalid');
+
+      // Guard against a missing endpoint during local dev / before wiring.
+      if (!endpoint) {
+        setStatus(
+          'error',
+          'Signup endpoint not configured. Set PUBLIC_SIGNUP_ENDPOINT in your .env file.'
+        );
+        return;
+      }
+
+      if (button) {
+        button.disabled = true;
+        button.dataset.label = button.textContent ?? '';
+        button.textContent = 'Sending…';
+      }
+      setStatus('');
+
+      try {
+        // TODO: This POSTs the email to PUBLIC_SIGNUP_ENDPOINT — a separate
+        // Cloudflare Worker (NOT built in this repo). That Worker MUST forward
+        // the address to an email service provider (Mailchimp / Buttondown /
+        // ConvertKit / etc.) so the list is actually *sendable* later — do not
+        // just dump it into a database with no way to email subscribers.
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, source: window.location.pathname }),
+        });
+
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+
+        form.reset();
+        setStatus('success', status?.dataset.success ?? 'You’re on the list!');
+      } catch (err) {
+        console.error('[signup] submission failed:', err);
+        setStatus('error', status?.dataset.error ?? 'Something went wrong. Please try again.');
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = button.dataset.label ?? 'Subscribe';
+        }
+      }
+    });
+
+    // Clear the invalid state as the user corrects the field.
+    input?.addEventListener('input', () => {
+      input.removeAttribute('aria-invalid');
+      if (status?.dataset.state === 'error') setStatus('');
+    });
+  });
+</script>

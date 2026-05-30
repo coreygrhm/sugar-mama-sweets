@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sugarmamasweets.shop/sitemap-index.xml

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "Bash(npm install *)",
+      "Bash(node scripts/generate-placeholders.mjs)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"current dev server on 4321: %{http_code}\\\\n\" http://localhost:4321/)",
+      "Bash(git config *)"
+    ]
+  }
+}

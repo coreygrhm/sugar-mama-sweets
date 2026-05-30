@@ -1,0 +1,21 @@
+# Cloudflare Worker config — Sugar Mama Sweets signup/contact endpoint.
+# Deploy from this folder:  cd worker && npx wrangler deploy
+name = "sugar-mama-signup"
+main = "src/index.js"
+compatibility_date = "2025-05-01"
+
+# Non-secret config. Edit these as needed.
+[vars]
+# Origin(s) allowed to POST to this Worker (comma-separated). localhost is
+# always allowed automatically for local dev.
+ALLOWED_ORIGIN = "https://sugarmamasweets.shop"
+
+# --- Contact-form email (optional; only needed if you keep the contact form) ---
+# Where contact messages are sent, and the verified Resend sender they come from.
+# NOTIFY_EMAIL = "leslie@sugarmamasweets.shop"
+# FROM_EMAIL   = "website@sugarmamasweets.shop"
+
+# --- Secrets (do NOT put these here) ---
+# Set them with wrangler so they're encrypted:
+#   npx wrangler secret put BUTTONDOWN_API_KEY   # email list signups
+#   npx wrangler secret put RESEND_API_KEY       # contact-form emails (optional)

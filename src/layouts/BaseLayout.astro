@@ -1,0 +1,131 @@
+---
+/**
+ * Base layout: <head> SEO/OG, fonts, header, footer.
+ * Pass `title` and (optionally) `description` per page.
+ */
+import { getImage } from 'astro:assets';
+import '@fontsource/playfair-display/500.css';
+import '@fontsource/playfair-display/600.css';
+import '@fontsource/playfair-display/700.css';
+import '@fontsource/nunito-sans/400.css';
+import '@fontsource/nunito-sans/600.css';
+import '@fontsource/nunito-sans/700.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../config/site';
+import { resolveImage } from '../lib/images';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+
+const pageTitle = title
+  ? `${title} | ${site.name}`
+  : `${site.name} — Custom Decorated Cookies | ${site.location}`;
+const pageDescription = description ?? site.description;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+// Build an absolute URL for the share/OG image (must be original signature work).
+let ogImageUrl = '';
+try {
+  const ogSrc = resolveImage(site.share.ogImage);
+  const optimized = await getImage({ src: ogSrc, width: 1200, height: 630, format: 'jpg' });
+  ogImageUrl = new URL(optimized.src, Astro.site).href;
+} catch {
+  // Placeholder image not present yet — link previews fall back to no image.
+}
+
+// LocalBusiness / Bakery structured data, built from the content config so it
+// stays in sync with the rest of the site. Helps Google show her as a local
+// business (name, location, social profiles).
+const [locality, region] = site.location.split(',').map((s) => s.trim());
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Bakery',
+  name: site.name,
+  description: site.description,
+  founder: site.owner,
+  url: site.url,
+  ...(ogImageUrl ? { image: ogImageUrl } : {}),
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: locality,
+    addressRegion: region,
+    addressCountry: 'US',
+  },
+  areaServed: site.location,
+  knowsAbout: [...site.knownFor],
+  sameAs: [site.contact.instagram, site.contact.facebook].filter(Boolean),
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="canonical" href={canonical} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <meta name="theme-color" content="#fbf6f0" />
+
+    <!-- Open Graph (Facebook, Messenger, iMessage, etc.) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={canonical} />
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    {ogImageUrl && <meta property="og:image:width" content="1200" />}
+    {ogImageUrl && <meta property="og:image:height" content="630" />}
+
+    <!-- Twitter / X card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+
+    <!-- LocalBusiness / Bakery structured data (built from src/config/site.ts) -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <!-- TODO: analytics — drop a single script tag here if/when needed. -->
+    <!-- <script defer src="https://your-analytics.example.com/script.js"></script> -->
+  </head>
+  <body>
+    <a href="#main" class="sr-only">Skip to content</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <!-- Tiny progressive-enhancement reveal. No framework, defers gracefully. -->
+    <script>
+      const els = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window) || els.length === 0) {
+        els.forEach((el) => el.classList.add('is-visible'));
+      } else {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                io.unobserve(entry.target);
+              }
+            });
+          },
+          { rootMargin: '0px 0px -10% 0px', threshold: 0.05 }
+        );
+        els.forEach((el) => io.observe(el));
+      }
+    </script>
+  </body>
+</html>

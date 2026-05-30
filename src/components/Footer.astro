@@ -1,0 +1,99 @@
+---
+import { site, isPlaceholder } from '../config/site';
+import EmailSignup from './EmailSignup.astro';
+
+const year = new Date().getFullYear();
+const { email, instagram, facebook } = site.contact;
+const emailReady = Boolean(email) && !isPlaceholder(email);
+const socials = [
+  instagram && { href: instagram, label: 'Instagram' },
+  facebook && { href: facebook, label: 'Facebook' },
+  emailReady && { href: `mailto:${email}`, label: 'Email' },
+].filter(Boolean) as { href: string; label: string }[];
+---
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <p class="footer-name">{site.name}</p>
+      <p class="footer-tag">{site.tagline}</p>
+      {
+        socials.length > 0 && (
+          <ul class="footer-social">
+            {socials.map((s) => (
+              <li>
+                <a href={s.href} target={s.href.startsWith('http') ? '_blank' : undefined} rel="noopener">
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <div class="footer-signup">
+      <EmailSignup variant="compact" />
+    </div>
+  </div>
+
+  <div class="container footer-bottom">
+    <p>&copy; {year} {site.name}. All rights reserved.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--cream-deep);
+    border-top: 1px solid color-mix(in srgb, var(--tan) 25%, transparent);
+    padding-top: clamp(2.5rem, 6vw, 4rem);
+    margin-top: var(--section-y);
+  }
+  .footer-grid {
+    display: grid;
+    gap: clamp(2rem, 5vw, 3rem);
+    grid-template-columns: 1fr;
+    padding-bottom: 2.5rem;
+  }
+  @media (min-width: 700px) {
+    .footer-grid {
+      grid-template-columns: 1fr auto;
+      align-items: start;
+    }
+  }
+  .footer-name {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+  }
+  .footer-tag {
+    color: var(--ink-soft);
+    max-width: 36ch;
+    margin: 0 0 1rem;
+  }
+  .footer-social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .footer-social a {
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .footer-social a:hover {
+    color: var(--blush-deep);
+  }
+  .footer-bottom {
+    border-top: 1px solid color-mix(in srgb, var(--tan) 20%, transparent);
+    padding-block: 1.25rem;
+  }
+  .footer-bottom p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+</style>
